@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pingme - Login</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin:0;
+  height:100vh;
+  overflow:hidden;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+}
+
+#splash {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  color:#fff; z-index:10;
+  animation: fadeOut 0.6s ease 1.6s forwards;
+}
+#splash .icon { font-size:4rem; margin-bottom:0.5rem; animation: pop 0.6s ease; }
+#splash .name { font-size:2.8rem; font-weight:800; letter-spacing:1px; }
+#splash .tagline { font-size:1rem; opacity:0.85; margin-top:0.5rem; letter-spacing:2px; text-transform:uppercase; }
+
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); }
+}
+@keyframes fadeOut {
+  to { opacity: 0; visibility: hidden; }
+}
+
+#page {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  height:100vh;
+  padding-top: 3rem;
+}
+#brandHeader {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  margin-bottom: 2.5rem;
+}
+#brandHeader .icon { font-size:2rem; }
+#brandHeader .name { font-size:1.8rem; font-weight:800; letter-spacing:0.5px; }
+
+.card {
+  background:#fff;
+  padding:2.5rem;
+  border-radius:16px;
+  width:320px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+}
+.card h2 { margin-top:0; color:#1f2937; }
+input {
+  width:100%; padding:12px; margin:8px 0;
+  border:1.5px solid #e5e7eb; border-radius:8px;
+  font-size:0.95rem; transition: border-color 0.2s;
+}
+input:focus { outline:none; border-color:#7c3aed; }
+button {
+  width:100%; padding:12px; margin-top:12px;
+  background: linear-gradient(135deg, #4f46e5, #ec4899);
+  color:#fff; border:none; border-radius:8px;
+  font-weight:bold; font-size:0.95rem; cursor:pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+button:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(124,58,237,0.4); }
+.toggle { text-align:center; margin-top:16px; color:#7c3aed; cursor:pointer; font-size:0.9rem; font-weight:600; }
+#error { text-align:center; min-height:1em; margin-top:6px; font-size:0.85rem; }
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="icon">&#128172;</div>
+  <div class="name">Pingme</div>
+  <div class="tagline">Stay Connected</div>
+</div>
+
+<div id="page">
+  <div id="brandHeader">
+    <span class="icon">&#128172;</span>
+    <span class="name">Pingme</span>
+  </div>
+  <div class="card">
+    <h2 id="formTitle">Login</h2>
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+    <button id="submitBtn">Login</button>
+    <div id="error"></div>
+    <div class="toggle" id="toggleMode">Don't have an account? Register</div>
+  </div>
+</div>
+
+<script>
+setTimeout(() => {
+  document.getElementById("splash").style.display = "none";
+  document.getElementById("page").style.display = "flex";
+}, 2200);
+
+const API_BASE = "http://3.110.218.164:8000";
+let mode = "login";
+
+document.getElementById("toggleMode").onclick = () => {
+  mode = mode === "login" ? "register" : "login";
+  document.getElementById("formTitle").innerText = mode === "login" ? "Login" : "Register";
+  document.getElementById("submitBtn").innerText = mode === "login" ? "Login" : "Register";
+  document.getElementById("toggleMode").innerText = mode === "login" ? "Don't have an account? Register" : "Already have an account? Login";
+  document.getElementById("error").innerText = "";
+};
+
+document.getElementById("submitBtn").onclick = async () => {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value;
+  const errorEl = document.getElementById("error");
+  errorEl.style.color = "#dc2626";
+  errorEl.innerText = "";
+
+  if (mode === "register") {
+    const res = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      errorEl.innerText = err.detail;
+      return;
+    }
+    mode = "login";
+    document.getElementById("formTitle").innerText = "Login";
+    document.getElementById("submitBtn").innerText = "Login";
+    document.getElementById("toggleMode").innerText = "Don't have an account? Register";
+    errorEl.style.color = "#16a34a";
+    errorEl.innerText = "Account created. Please log in.";
+    return;
+  }
+
+  const formBody = new URLSearchParams();
+  formBody.append("username", username);
+  formBody.append("password", password);
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: formBody
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    errorEl.innerText = err.detail;
+    return;
+  }
+  const data = await res.json();
+  localStorage.setItem("token", data.access_token);
+  localStorage.setItem("username", username);
+  window.location.href = "chat.html";
+};
+</script>
+</body>
+</html>
