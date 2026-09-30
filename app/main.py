@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 from .database import Base, engine
 from .routes import auth_routes, message_routes
@@ -18,6 +20,16 @@ app.add_middleware(
 
 app.include_router(auth_routes.router)
 app.include_router(message_routes.router)
+
+FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+@app.get("/")
+def home():
+    return FileResponse(FRONTEND_DIR / "index.html")
+
+@app.get("/chat")
+def chat():
+    return FileResponse(FRONTEND_DIR / "chat.html")
 
 @app.get("/health")
 def health():
