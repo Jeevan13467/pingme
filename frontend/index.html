@@ -104,7 +104,7 @@ setTimeout(() => {
   document.getElementById("page").style.display = "flex";
 }, 2200);
 
-const API_BASE = "http://3.110.218.164:8000";
+const API_BASE = "https://pingme-production-92b8.up.railway.app";
 let mode = "login";
 
 document.getElementById("toggleMode").onclick = () => {
@@ -158,7 +158,7 @@ document.getElementById("submitBtn").onclick = async () => {
   const data = await res.json();
   localStorage.setItem("token", data.access_token);
   localStorage.setItem("username", username);
-  window.location.href = "chat.html";
+  window.location.href = "/chat";
 };
 </script>
 </body>
