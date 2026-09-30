@@ -12,6 +12,7 @@ WORKDIR /app
 
 COPY --from=builder /app/deps /app/deps
 COPY app/ ./app/
+COPY frontend/ ./frontend/
 
 ENV PYTHONPATH=/app/deps
 ENV PYTHONDONTWRITEBYTECODE=1
